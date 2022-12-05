@@ -344,7 +344,7 @@ async function validateStockIngredient(user_id,id, menus){
         }
         )
         if(user.saldo < total){
-            throw new ApolloError("saldo kurang")
+            throw new ApolloError("less balance")
         }
     
      const ValidasiSuccess = await transModel.findByIdAndUpdate(id,{menu:menus, total:total,order_status:"success"},{new:true})
