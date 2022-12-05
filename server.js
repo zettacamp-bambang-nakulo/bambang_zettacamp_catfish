@@ -51,6 +51,7 @@ const resolvers= merge(
     trans_resolvers
 )
 
+
 const schema = makeExecutableSchema({ typeDefs, resolvers });
 const schemaMiddleware = applyMiddleware(schema, authMiddelware, authRole)
 
