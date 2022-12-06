@@ -5,7 +5,7 @@ const { ApolloServer, gql}= require("apollo-server");
 const mongoose= require("mongoose")
 
 //manggil data resolvers yang ada dalam file lain
-const Userresolvers= require("./resolvers")
+const Userresolvers= require("./users/resolvers")
 
 //impor ingredients resolvers
 const Ingresolvers= require("./ingredients/ingredient_resolvers")
@@ -31,7 +31,7 @@ const ingredientloaders= require("./ingredients/ingredientLoader")
 const loaderRecepi= require("./recipes/recipesLoader")
 
 //import user loader
-const loadUser= require("./userLoader")
+const loadUser= require("./users/userLoader")
 
 //import transactions
 const trans_resolvers= require("./transactions/trans_resolvers")
