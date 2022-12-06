@@ -4,7 +4,7 @@ const { ApolloError } = require('apollo-server-errors')
 const mongoose= require("mongoose")
 //import modul transactions
 const transModel= require("./transModel")
-const userModel=require("../userModel")
+const userModel=require("../users/userModel")
 const ingModel= require("../ingredients/ingredientsModel")
 const moment=require("moment")
 const { findByIdAndUpdate } = require('../ingredients/ingredientsModel')
