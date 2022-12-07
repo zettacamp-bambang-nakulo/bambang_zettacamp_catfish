@@ -87,6 +87,7 @@ const typeDefs= gql`
         menu_highlight:Boolean
         special_offers:Boolean
         discount:Int
+        afterDiscount:Int
 
     }
     
@@ -122,7 +123,6 @@ const typeDefs= gql`
         recipe_id:recipes
         amount:Int
         note:String
-        affter_discount:Int
         total_recipe:Int
     }
 
@@ -193,7 +193,7 @@ const typeDefs= gql`
         DeleteRecipe(id:ID):recipes
 
         addCart(menu:[trans_menuInput]): transactions
-        DeleteTransaction(id:ID):transactions
+        DeleteTransaction(id:ID):[transactions]
 
         UpdateCart(id:ID,note:String):transactions
         OrderTransaction:transactions
