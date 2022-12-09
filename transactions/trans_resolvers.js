@@ -9,6 +9,7 @@ const ingModel= require("../ingredients/ingredientsModel")
 const moment=require("moment")
 const { findByIdAndUpdate } = require('../ingredients/ingredientsModel')
 const recipeModel = require('../recipes/recipesModel')
+const { get } = require('lodash')
 
 //get data transaction menggunkan lookup dan dataloader
 async function getAllTransaction(parent,{page, limit,last_name_user, recipe_name,order_status,order_date},context){
@@ -136,24 +137,43 @@ async function getAllTransaction(parent,{page, limit,last_name_user, recipe_name
 
 async function getHistory(parent,{page, limit,last_name_user, recipe_name,order_status,order_date},context){
     // console.log(context.loadUser)
-    let User= context.req.user_id    
-    let queryAgg= [
-        {
-            $match:{
-                order_status:{
-                    $ne:"pending"
+    let User= context.req.user_id  
+    const count_pending = await transModel.find({order_status:"pending"})
+    const count_success = await transModel.find({order_status:"success"})
+    const count_failed = await transModel.find({order_status:"failed"})
+    const count_total = await transModel.count() 
+    let queryAgg= [];
+    if(page){
+        queryAgg.unshift(
+            {
+                $skip:(page-1)*limit
+            },
+            {
+                $limit:limit
+            } 
+        )
+    }
+    if(!order_status){
+        queryAgg.unshift(
+            {
+                $match:{
+                    order_status:{
+                        $ne:"pending"
+                    }
                 }
             }
-        },
-        {
-            $skip:(page-1)*limit
-        },
-        {
-            $limit:limit
-        }
-    ];
+        )
+    }else{
+        queryAgg.unshift(
+            {
+                $match:{
+                    order_status:order_status
+                }
+            }
+        )
+    }
     if(User.role === "user"){
-        queryAgg.unshift({
+        queryAgg.push({
             $match:{
                 user_id:mongoose.Types.ObjectId(User.id)
              }
@@ -161,7 +181,7 @@ async function getHistory(parent,{page, limit,last_name_user, recipe_name,order_
     }
     if(last_name_user){
         // POPULATE SINI
-        queryAgg.push( 
+        queryAgg.unshift( 
             {
             $lookup:{
                 from:"users",
@@ -196,37 +216,36 @@ async function getHistory(parent,{page, limit,last_name_user, recipe_name,order_
             }
         )
     }
-    if(order_status=="success"){
-        queryAgg.unshift(
-            {
-                $match:{
-                    order_status:"success"
-                }
-            }
-        )
+    // if(order_status=="success"){
+    //     queryAgg.unshift(
+    //         {
+    //             $match:{
+    //                 order_status:"success"
+    //             }
+    //         }
+    //     )
         
-    }
-    if(order_status ==="pending"){
-        queryAgg.unshift(
-            {
-                $match:{
-                    order_status:"pending",
-                    status:"active"
-                }
-            }
-        )
-    }
-    if(order_status ==="failed"){
-        queryAgg.unshift(
-            {
-                $match:{
-                    order_status:"failed"
-                }
-            }
-        )
-    }
+    // }
+    // if(order_status ==="pending"){
+    //     queryAgg.unshift(
+    //         {
+    //             $match:{
+    //                 order_status:"pending"
+    //             }
+    //         }
+    //     )
+    // }
+    // if(order_status ==="failed"){
+    //     queryAgg.unshift(
+    //         {
+    //             $match:{
+    //                 order_status:"failed"
+    //             }
+    //         }
+    //     )
+    // }
     if(order_date){
-        queryAgg.push(
+        queryAgg.unshift(
             {
                 $match:{
                     order_date:order_date
@@ -234,29 +253,23 @@ async function getHistory(parent,{page, limit,last_name_user, recipe_name,order_
             }
         )
     }
-
-    const count_total = await transModel.count()
     let getTrans = await transModel.aggregate(queryAgg)
     getTrans.map((el)=>{
         el.id = mongoose.Types.ObjectId(el._id)
             return el
        })
-       const pending_order = getTrans.filter((item)=> item.order_status ==="pending").length
-    //    console.log(pending_order)
-       const success_order = getTrans.filter((item)=> item.order_status ==="success").length
-       const failed_order = getTrans.filter((item)=> item.order_status === "failed").length
        getTrans = {
         data_transaction: getTrans,
-        count_pending:pending_order,
-        count_success:success_order,
-        count_failed:failed_order,
+        count_pending:count_pending.length,
+        count_success:count_success.length,
+        count_failed:count_failed.length,
         count_total:count_total,
         page: page,
         // maxe_page_pending:Math.ceil(count_pending/limit),
         max_page:  Math.ceil( count_total / limit),
         
         };
-      
+    // console.log(JSON.stringify(queryAgg))
     return getTrans
 
     // const getTrans= await transModel.find()
@@ -290,7 +303,7 @@ async function getOneTransaction(parent,args,context){
     try{
             let User= context.req.user_id
             const getOneTrans = await transModel.findOne({order_status:"pending", user_id:User.id})
-            console.log(getOneTrans)
+            // console.log(getOneTrans)
             return getOneTrans 
         
     }catch(err){
@@ -329,6 +342,7 @@ async function validateStockIngredient(user_id,id, menus){
             });
             if( ingredient.ingredient_id.stock < (ingredient.stock_used*amount)){
                 let Validasifailed =  await transModel.findByIdAndUpdate(id,{user_id,menu:menus,order_status:"failed"},{new:true})
+                if(Validasifailed.order_status ==="failed")throw new ApolloError("order is failed")
                 return Validasifailed
                 
             }
@@ -346,6 +360,11 @@ async function validateStockIngredient(user_id,id, menus){
         if(user.saldo < total || user.saldo < 0){
             throw new ApolloError("less balance")
         }
+    
+    // const test = await transModel.findOne({menu:menus.amount})
+    // if(test > available){
+    //     throw new ApolloError("error cok")
+    // }
     
      const ValidasiSuccess = await transModel.findByIdAndUpdate(id,{menu:menus, total:total,order_status:"success"},{new:true})
      reduceingredientStock(ingredientMap);
@@ -373,8 +392,9 @@ async function incomingAdmin(parent,args,context){
 }
 
 async function addCart(parent,{menu,order_date},context){
+    console.log(menu)
     let User= context.req.user_id
-    const checkUser = await transModel.findOne({
+    const checkTransacation = await transModel.findOne({
         $and:[
             {
                 order_status:"pending"
@@ -385,7 +405,7 @@ async function addCart(parent,{menu,order_date},context){
         ]
     })
     // console.log(check)
-    if(!checkUser){
+    if(!checkTransacation){
         order_date = moment(new Date).format("LLLL")
         const addmenu= await new transModel({
             user_id:User.id,
@@ -398,13 +418,25 @@ async function addCart(parent,{menu,order_date},context){
         return addmenu
 
     }else{
+        let add = await transModel.find(
+            {
+                _id : mongoose.Types.ObjectId(checkTransacation._id),
+                menu:{
+                    $elemMatch:{recipe_id:mongoose.Types.ObjectId(menu[0].recipe_id)}
+                }
+            }
+        )
+        console.log(add)
+        if(add.length > 0){
+            throw new ApolloError("menu sudah ada")
+        }
         for(let status of menu){
             const checkStatus = await recipeModel.findById(status.recipe_id)
             if(checkStatus.status ==="unpublish"){
                 throw new ApolloError("the menu has been unpublished")
             }
         }
-        let add = await transModel.findByIdAndUpdate(checkUser.id,
+        add = await transModel.findByIdAndUpdate(checkTransacation._id,
             {
                 $push:{
                     menu:menu,
@@ -416,25 +448,6 @@ async function addCart(parent,{menu,order_date},context){
     }
 
 }
-
-// async function AfterDiscount(menu,args,context){
-//     // console.log(menu.recipe_id)
-//     let afterDiscount = 0
-//     const recipe = await recipeModel.findById(menu.recipe_id).lean()
-//     // console.log(recipe.special_offers)
-//     if (recipe){
-//         afterDiscount = (recipe.price *menu.amount)
-//         // console.log(Total_Recipe)
-//     }
-//     if(recipe.special_offers === true){
-//         currentPrice = recipe.price *menu.amount;
-//         dicount = currentPrice *(recipe.discount/100)
-//         // console.log(recipe.discount/100)
-//         afterDiscount = (currentPrice-dicount)
-//         // console.log(recipe.price)
-//     }
-// return afterDiscount
-// }
 
 async function TotalRecipe(menu,args,context){
     // console.log(menu.recipe_id)
@@ -454,30 +467,6 @@ async function TotalRecipe(menu,args,context){
     }
 return Total_Recipe
 }
-
-// async function getTotal({menu,amount},args,context){
-//     let total_price = 0 
-//     if(menu){
-//     for(let el of menu ){
-//         const recipe = await recipeModel.findById(el.recipe_id)        
-//         if(recipe.special_offers === true){
-//             dicount=(recipe.price)*(20/100)
-//             // console.log(dicount)
-//             total_price += (recipe.price*el.amount)-dicount
-//            return total_price
-           
-//         }
-//         if(recipe){
-//             total_price += (recipe.price *el.amount)
-//         }
-
-//     }
-// }
-//     // console.log(total_price)
-//     return total_price
-
-// }
-
 
 //function untuk menambahkan menu ke dalam add cart
 async function getTotal({menu},args,context){
@@ -515,7 +504,7 @@ async function UpdateCart(parent,{id,note},context){
 }
 //function untuk melakukan transaksi keseluruhannya
 async function OrderTransaction(parent,args,context){
-    console.log(context.user)
+    // console.log(context.user)
     let User= context.req.user_id
     const checktrans = await transModel.findOne(
         {
@@ -529,14 +518,9 @@ async function OrderTransaction(parent,args,context){
             ]
         }
     )
-    // console.log(checktrans)
     if(checktrans){
-        // let orderValidasi = await validateStockIngredient(User.id,id,checktrans.menu)
         let checkValidate = await validateStockIngredient(User.id,checktrans._id,checktrans.menu)
-        // console.log(coba.order_status)
-        // coba.save()
         return checkValidate
-        // console.log( await transModel.findByIdAndUpdate(id,{coba}))
     }
 }
 
@@ -614,7 +598,7 @@ async function deleteCart(parent,{id},context){
 
 //functions untuk mendelete transactions
 async function DeleteTransaction(parent,args,context){
-    let delTrans= await transModel.updateMany(
+    await transModel.updateMany(
             {
                 status:"active"
             },

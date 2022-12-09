@@ -207,7 +207,7 @@ async function CreateUser(parent,{email,first_name,last_name,password,role="user
         role:role,
         usertype:usertype
     })
-    if(addUser.role ==="admin"){
+    if(role ==="admin"){
         saldo:0
     }
     if(!addUser){

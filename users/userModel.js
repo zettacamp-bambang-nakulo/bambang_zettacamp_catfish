@@ -31,10 +31,10 @@ const userSchema= new mongoose.Schema({
         enum:["user", "admin"],
         default:"user"
     },
-    saldo:{
-        type:Number,
-        default:500000
-    },
+    // saldo:{
+    //     type:Number,
+    //     default:500000
+    // },
     usertype:[
         {
             name: String,

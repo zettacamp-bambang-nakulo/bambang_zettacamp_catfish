@@ -69,5 +69,5 @@ const apolloServer= new ApolloServer({
 });
 
 
-apolloServer.listen(3000)
-console.log("Running a GraphQL API server at http://localhost:3000/graphql")
+apolloServer.listen(4000)
+console.log("Running a GraphQL API server at http://localhost:4000/graphql")
