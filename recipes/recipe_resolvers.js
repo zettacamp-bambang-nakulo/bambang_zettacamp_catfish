@@ -281,7 +281,7 @@ async function UpdateRecipe(parent,{id,recipe_name,description,image,ingredients
         let ingredientIDs= ingredients.map((el)=>el.ingredient_id.toString())
         console.log(JSON.stringify(ingredientIDs))
         if(new Set(ingredientIDs).size !==ingredientIDs.length){
-            throw new ApolloError("ono sek podo kudu diganti yo")
+            throw new ApolloError("ingredients are already there")
         }
         for(let ingredient of ingredients){
            const bahan = await ingModel.findById(ingredient.ingredient_id)

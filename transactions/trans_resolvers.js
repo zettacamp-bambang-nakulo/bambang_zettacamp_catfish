@@ -15,14 +15,26 @@ const { get } = require('lodash')
 async function getAllTransaction(parent,{page, limit,last_name_user, recipe_name,order_status,order_date},context){
     // console.log(context.loadUser)
     let User= context.req.user_id    
-    let queryAgg= [
-        {
-            $skip:(page-1)*limit
-        },
-        {
-            $limit:limit
-        }
-    ];
+    const count_pending = await transModel.find({user_id:mongoose.Types.ObjectId(User.id),order_status:"pending"})
+    const count_success = await transModel.find({user_id:mongoose.Types.ObjectId(User.id),order_status:"success"})
+    const count_failed = await transModel.find({user_id:mongoose.Types.ObjectId(User.id),order_status:"failed"})
+    const count_total = await transModel.find({user_id:mongoose.Types.ObjectId(User.id)}).count()
+    let queryAgg= [];
+    if(page){
+        queryAgg.unshift(
+            {
+                $skip:(page-1)*limit
+            },
+            {
+                $limit:limit
+            },
+            {
+                $sort :{
+                    _id:-1
+                }
+            }
+        )
+    }
     if(User.role === "user"){
         queryAgg.unshift({
             $match:{
@@ -105,22 +117,23 @@ async function getAllTransaction(parent,{page, limit,last_name_user, recipe_name
             }
         )
     }
-
-    const count_total = await transModel.count()
+    if(User.role === "user"){
+        queryAgg.unshift({
+            $match:{
+                user_id:mongoose.Types.ObjectId(User.id)
+             }
+    })
+    }
     let getTrans = await transModel.aggregate(queryAgg)
     getTrans.map((el)=>{
         el.id = mongoose.Types.ObjectId(el._id)
             return el
        })
-       const pending_order = getTrans.filter((item)=> item.order_status ==="pending").length
-    //    console.log(pending_order)
-       const success_order = getTrans.filter((item)=> item.order_status ==="success").length
-       const failed_order = getTrans.filter((item)=> item.order_status === "failed").length
        getTrans = {
         data_transaction: getTrans,
-        count_pending:pending_order,
-        count_success:success_order,
-        count_failed:failed_order,
+        count_pending:count_pending.length,
+        count_success:count_success.length,
+        count_failed:count_failed.length,
         count_total:count_total,
         page: page,
         // maxe_page_pending:Math.ceil(count_pending/limit),
@@ -327,6 +340,7 @@ async function validateStockIngredient(user_id,id, menus){
             path: "ingredients.ingredient_id"
         }
      })
+
      const ingredientMap=[]
      let total = 0
      for (let recipe of transaction_menu.menu){
@@ -349,23 +363,22 @@ async function validateStockIngredient(user_id,id, menus){
             
         }
     }
+   
+    //  if(transaction_menu.amount > available){
+    //      throw new ApolloError(" amount lebih dari avaible")
+    //  }
     let total_all = await getTotal({menu:menus})
+    // console.log(t)
+    if(user.saldo < total_all ){
+        throw new ApolloError("less balance")
+    }
     await userModel.updateOne({_id:user_id},
         {
             $set:{
                 saldo:user.saldo-=total_all
             }
         }
-        )
-        if(user.saldo < total || user.saldo < 0){
-            throw new ApolloError("less balance")
-        }
-    
-    // const test = await transModel.findOne({menu:menus.amount})
-    // if(test > available){
-    //     throw new ApolloError("error cok")
-    // }
-    
+        )    
      const ValidasiSuccess = await transModel.findByIdAndUpdate(id,{menu:menus, total:total,order_status:"success"},{new:true})
      reduceingredientStock(ingredientMap);
     //  userSaldo
@@ -374,7 +387,6 @@ async function validateStockIngredient(user_id,id, menus){
 
 async function incomingAdmin(parent,args,context){
     let User= context.req.user_id 
-    
     if(User.role === "admin"){
         const checkAdmin = await transModel.find(
             {
@@ -383,7 +395,9 @@ async function incomingAdmin(parent,args,context){
         )
         let balance = 0
         for(el of checkAdmin){
-            balance += el.total
+            let total_all = await getTotal(el)
+            // console.log(total_all)
+            balance += total_all
         }
         return { balanceAdmin:balance}
     }
@@ -392,7 +406,6 @@ async function incomingAdmin(parent,args,context){
 }
 
 async function addCart(parent,{menu,order_date},context){
-    console.log(menu)
     let User= context.req.user_id
     const checkTransacation = await transModel.findOne({
         $and:[
@@ -406,7 +419,7 @@ async function addCart(parent,{menu,order_date},context){
     })
     // console.log(check)
     if(!checkTransacation){
-        order_date = moment(new Date).format("LLLL")
+        order_date = moment(new Date).format("LL")
         const addmenu= await new transModel({
             user_id:User.id,
             menu:menu,
@@ -519,7 +532,7 @@ async function OrderTransaction(parent,args,context){
         }
     )
     if(checktrans){
-        let checkValidate = await validateStockIngredient(User.id,checktrans._id,checktrans.menu)
+        let checkValidate = await validateStockIngredient(User.id,checktrans._id,checktrans.menu,order_date = moment(new Date).format("LL"))
         return checkValidate
     }
 }

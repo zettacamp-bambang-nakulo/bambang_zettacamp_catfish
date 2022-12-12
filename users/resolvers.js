@@ -207,9 +207,6 @@ async function CreateUser(parent,{email,first_name,last_name,password,role="user
         role:role,
         usertype:usertype
     })
-    if(role ==="admin"){
-        saldo:0
-    }
     if(!addUser){
         throw new ApolloError("must be filled")
     }
@@ -231,7 +228,9 @@ async function ForgetPassword(parent,{email,password},context){
 
 //untuk update data user
 async function UpdateUser(parent,{id,email,first_name,last_name,password,status}){
-    password = await bcrypt.hash(password, 5)
+    if(password){
+        password = await bcrypt.hash(password, 5)
+    }
     let changeUser= await userModel.findByIdAndUpdate(id,{
         email:email,
         first_name:first_name,
