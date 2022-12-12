@@ -58,6 +58,7 @@ async function getAllIngredients(parent,{name,stock,page,limit}){
     else{
         throw new ApolloError("stock empty")
     }
+    
     let count = await ingModel.find({status:"active"})
     const totaldoc = count.length
 
@@ -65,6 +66,7 @@ async function getAllIngredients(parent,{name,stock,page,limit}){
     const totaldocdel = count_del.length
 
     let count_total = await ingModel.count()
+    // console.log(JSON.stringify(queryAgg))
     let getIng= await ingModel.aggregate(queryAgg,[
         {
             $skip : (page-1)*limit
@@ -74,6 +76,7 @@ async function getAllIngredients(parent,{name,stock,page,limit}){
         },
        ]
        )
+       
        getIng.map((el)=>{
         el.id = mongoose.Types.ObjectId(el._id)
             return el
