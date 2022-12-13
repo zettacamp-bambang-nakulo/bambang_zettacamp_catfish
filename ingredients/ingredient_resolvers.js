@@ -67,15 +67,7 @@ async function getAllIngredients(parent,{name,stock,page,limit}){
 
     let count_total = await ingModel.count()
     // console.log(JSON.stringify(queryAgg))
-    let getIng= await ingModel.aggregate(queryAgg,[
-        {
-            $skip : (page-1)*limit
-        },
-        {
-            $limit:limit
-        },
-       ]
-       )
+    let getIng= await ingModel.aggregate(queryAgg)
        
        getIng.map((el)=>{
         el.id = mongoose.Types.ObjectId(el._id)
