@@ -4,14 +4,13 @@ const ingModel= require("./ingredientsModel")
 const recipeModel = require("../recipes/recipesModel")
 //import mongoose
 const mongoose= require("mongoose")
-const  ApolloError  = require('apollo-server-errors')
 
 //-------------------------------------------collection ingredients-----------------------------------------------------//
 // create ingredients
 async function CreateIngredints(parent,{name,stock}){
     const namaIng = await ingModel.findOne({name:name})
     if(namaIng){
-        throw new ApolloError("ingredient already exists")
+        throw new Error("ingredient already exists")
     }
     let addIngredint = await new ingModel({
         name:name,
@@ -56,7 +55,7 @@ async function getAllIngredients(parent,{name,stock,page,limit}){
         )
     }
     else{
-        throw new ApolloError("stock empty")
+        throw new Error("stock empty")
     }
     
     let count = await ingModel.find({status:"active"})
@@ -91,19 +90,16 @@ async function getOneIngredients(parent,{id}){
         const getone= await ingModel.findById(id)
         return getone
     }else{
-        return new ApolloError(" id harus dimasukan")
+        return new Error(" id harus dimasukan")
     }
 }
 
 //update stock
-async function UpdateIngredients(parent,{id,name, stock}){
-    let updateIng = await ingModel.findByIdAndUpdate(id,{
-        name:name,
-        stock:stock
-
-    },{new:true})
-    if(stock < 0){
-        throw new ApolloError("stock can't minus")
+async function UpdateIngredients(parent,{id,ingredients}){
+    console.log(ingredients.stock)
+    let updateIng = await ingModel.findByIdAndUpdate(id,ingredients,{new:true})
+    if(ingredients.stock < 0){
+        throw new Error("stock can't minus")
     }
     return updateIng
 }
@@ -118,7 +114,7 @@ async function DeleteIngredients(parent,{id,name,stock,status}){
         }
     ])
     if(checkRecipe.length !== 0){
-        throw new ApolloError("ingredients has been used ")
+        throw new Error("ingredients has been used ")
     }else{
         const delIng = await ingModel.findByIdAndUpdate(id,
         {
@@ -127,7 +123,7 @@ async function DeleteIngredients(parent,{id,name,stock,status}){
             }
         })
         if(!delIng){
-            throw new ApolloError("ingredients is delete")
+            throw new Error("ingredients is delete")
         }
         
     return delIng

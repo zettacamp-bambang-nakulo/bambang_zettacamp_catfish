@@ -71,7 +71,7 @@ const typeDefs= gql`
     }
 
     input updateingredients{
-        nama:String
+        name:String
         stock:Int
         status:all_status
     }
@@ -174,10 +174,6 @@ const typeDefs= gql`
         balanceAdmin:Int
     }
 
-    input updateNote{
-        note:String
-    }
-
 
     type Query{
         getAllUser(email:String,page:Int,limit:Int):users
@@ -206,7 +202,7 @@ const typeDefs= gql`
         ForgetPassword(email:String,password:String):user
         
         CreateIngredints(name:String, stock:Int): ingredients
-        UpdateIngredients(id:ID,updateIng:updateingredients): ingredients
+        UpdateIngredients(id:ID,ingredients:updateingredients): ingredients
         DeleteIngredients(id:ID):ingredients
 
         CreateRecipes(recipe_name:String, description:String, image:String, ingredients:[ingredientidinput],status:status_recipe,price:Int,menu_highlight:Boolean,special_offers:Boolean,discount:Int):recipes
@@ -216,7 +212,7 @@ const typeDefs= gql`
         addCart(menu:[trans_menuInput]): transactions
         DeleteTransaction:[transactions]
 
-        UpdateCart(id:ID,updatenote:updateNote):transactions
+        UpdateCart(id:ID,note:String):transactions
         OrderTransaction:transactions
         incrAmaount(menu_id:ID,amount:Int):transactions
         decrAmaount(menu_id:ID,amount:Int):transactions

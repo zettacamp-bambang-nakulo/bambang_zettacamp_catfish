@@ -1,14 +1,13 @@
-const { ApolloError } = require('apollo-server-errors')
 const jwt= require("jsonwebtoken");
 
 async function auth (resolve, parent, args, context, info){
     const token = context.req.headers.authorization || ""
     if(!token){
-        throw new ApolloError("kamu tidak terauthorisasi")
+        throw new Error("kamu tidak terauthorisasi")
     }
     jwt.verify(token,"zetta", function(err,decode){
         if(err){
-            throw new ApolloError(err)
+            throw new Error(err)
         }
         context.req.user_id = decode
     })

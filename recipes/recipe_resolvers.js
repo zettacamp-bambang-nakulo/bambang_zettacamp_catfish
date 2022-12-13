@@ -7,8 +7,6 @@ const ingredientsModel= require("../ingredients/ingredientsModel")
 //impor moongoose
 const mongoose = require('mongoose');
 
-//impor apollo error
-const { ApolloError } = require('apollo-server-errors');
 const ingModel = require("../ingredients/ingredientsModel");
 
 //untuk memanggil data recipes dengan menggunakn loader
@@ -208,7 +206,7 @@ async function getAvailable(parent,args,context){
     const minStock = []
     for (let ingredient of parent.ingredients){
         const recipe_ing = await ingredientsModel.findById(ingredient.ingredient_id)
-        if(!recipe_ing)throw new ApolloError("id not found")
+        if(!recipe_ing)throw new Error("id not found")
         minStock.push(Math.floor(recipe_ing.stock / ingredient.stock_used))
     }
     return Math.min(...minStock)
@@ -233,7 +231,7 @@ async function getOneRecipes(parent,{id}){
 async function CreateRecipes(parent,{recipe_name,description,image,ingredients,stock_used,price,status,menu_highlight,special_offers,discount}){
     const checkname= await recipeModel.findOne({recipe_name:recipe_name})
     if(checkname){
-        throw new ApolloError("the name recipe already exists")
+        throw new Error("the name recipe already exists")
     }
         const addrecipes= await new recipeModel({
          recipe_name:recipe_name,
@@ -281,15 +279,15 @@ async function UpdateRecipe(parent,{id,recipe_name,description,image,ingredients
         let ingredientIDs= ingredients.map((el)=>el.ingredient_id.toString())
         console.log(JSON.stringify(ingredientIDs))
         if(new Set(ingredientIDs).size !==ingredientIDs.length){
-            throw new ApolloError("ingredients are already there")
+            throw new Error("ingredients are already there")
         }
         for(let ingredient of ingredients){
            const bahan = await ingModel.findById(ingredient.ingredient_id)
            if (bahan.stock < ingredient.stock_used){
-            throw new ApolloError("less ingredient")
+            throw new Error("less ingredient")
            }
         //    if(baha){
-        //     throw new ApolloError("ingredient has been used")
+        //     throw new Error("ingredient has been used")
         //    }
         }
     }

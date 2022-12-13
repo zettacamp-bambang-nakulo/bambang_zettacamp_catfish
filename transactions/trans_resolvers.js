@@ -1,5 +1,5 @@
 //import untuk apollo error
-const { ApolloError } = require('apollo-server-errors')
+
 //import mongoose
 const mongoose= require("mongoose")
 //import modul transactions

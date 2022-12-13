@@ -4,9 +4,6 @@ const mongoose = require('mongoose');
 //import user model
 const userModel= require("./userModel")
 
-//import apollo error
-const { ApolloError } = require('apollo-server-errors')
-
 //import jwt
 const jwt= require("jsonwebtoken");
 
@@ -106,7 +103,7 @@ async function getOneUser(parent,{id, email}){
     }if(email) {
         const checkEmail= await userModel.find({email:email})
         if(checkEmail.length < 1){
-            throw new ApolloError("email not found")
+            throw new Error("email not found")
         }
 
         return checkEmail
@@ -117,7 +114,7 @@ async function getOneUser(parent,{id, email}){
 async function CreateUser(parent,{email,first_name,last_name,password,role="user"}){
     const checkemail = await userModel.findOne({email:email})
     if(checkemail){
-        throw new ApolloError("email been used")
+        throw new Error("email been used")
     }
     let generalPermit= [
         {
@@ -208,7 +205,7 @@ async function CreateUser(parent,{email,first_name,last_name,password,role="user
         usertype:usertype
     })
     if(!addUser){
-        throw new ApolloError("must be filled")
+        throw new Error("must be filled")
     }
     
     addUser.save()
@@ -222,7 +219,7 @@ async function ForgetPassword(parent,{email,password},context){
         password = await bcrypt.hash(password, 5)
         return await userModel.findByIdAndUpdate(checkEmail._id,{password:password})
     }else{
-        throw new ApolloError("email not found")
+        throw new Error("email not found")
     }
 }
 
@@ -262,7 +259,7 @@ function generateAccessToken(payload){
 async function login(parent,{email, password}){
     let checkUser= await userModel.findOne({email:email});
     if(!checkUser ){
-        throw new ApolloError("user not found or wrong email")
+        throw new Error("user not found or wrong email")
     }
     password= await bcrypt.compare(password, checkUser.password)
     if(password){
@@ -279,7 +276,7 @@ async function login(parent,{email, password}){
 
         }
     }else{
-        throw new ApolloError("check again email and password there is something wrong")
+        throw new Error("check again email and password there is something wrong")
     }
 }
 
