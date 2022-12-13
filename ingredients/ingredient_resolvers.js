@@ -4,7 +4,7 @@ const ingModel= require("./ingredientsModel")
 const recipeModel = require("../recipes/recipesModel")
 //import mongoose
 const mongoose= require("mongoose")
-const { ApolloError } = require('apollo-server-errors')
+const  ApolloError  = require('apollo-server-errors')
 
 //-------------------------------------------collection ingredients-----------------------------------------------------//
 // create ingredients
