@@ -70,6 +70,12 @@ const typeDefs= gql`
         max_page: Int
     }
 
+    input updateingredients{
+        nama:String
+        stock:Int
+        status:all_status
+    }
+
     input ingredientidinput{
         ingredient_id:ID
         stock_used:Int
@@ -105,6 +111,17 @@ const typeDefs= gql`
         count_total:Int
         page: Int
         max_page: Int
+    }
+
+    input updateRecipes{
+        recipe_name:String
+        price:Int
+        status:status_recipe
+        description:String
+        image:String
+        menu_highlight:Boolean
+        special_offers:Boolean
+        discount:Int
     }
 
     type transactions{
@@ -157,6 +174,10 @@ const typeDefs= gql`
         balanceAdmin:Int
     }
 
+    input updateNote{
+        note:String
+    }
+
 
     type Query{
         getAllUser(email:String,page:Int,limit:Int):users
@@ -185,17 +206,17 @@ const typeDefs= gql`
         ForgetPassword(email:String,password:String):user
         
         CreateIngredints(name:String, stock:Int): ingredients
-        UpdateIngredients(id:ID,name:String,stock:Int): ingredients
+        UpdateIngredients(id:ID,updateIng:updateingredients): ingredients
         DeleteIngredients(id:ID):ingredients
 
         CreateRecipes(recipe_name:String, description:String, image:String, ingredients:[ingredientidinput],status:status_recipe,price:Int,menu_highlight:Boolean,special_offers:Boolean,discount:Int):recipes
-        UpdateRecipe(id:ID,recipe_name:String,description:String, image:String, ingredients:[ingredientidinput],price:Int,status:status_recipe,menu_highlight:Boolean,special_offers:Boolean,discount:Int):recipes
+        UpdateRecipe(id:ID,updateRecipe:updateRecipes,ingredients:[ingredientidinput]):recipes
         DeleteRecipe(id:ID):recipes
 
         addCart(menu:[trans_menuInput]): transactions
         DeleteTransaction:[transactions]
 
-        UpdateCart(id:ID,note:String):transactions
+        UpdateCart(id:ID,updatenote:updateNote):transactions
         OrderTransaction:transactions
         incrAmaount(menu_id:ID,amount:Int):transactions
         decrAmaount(menu_id:ID,amount:Int):transactions
