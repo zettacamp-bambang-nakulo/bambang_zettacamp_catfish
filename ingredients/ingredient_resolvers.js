@@ -95,15 +95,10 @@ async function getOneIngredients(parent,{id}){
 }
 
 //update stock
-async function UpdateIngredients(parent,{id,name,stock}){
-    console.log(ingredients.stock)
-    let updateIng = await ingModel.findByIdAndUpdate(id,
-        {
-            name:name,
-            stock:stock
-        }
-        ,{new:true})
-    if(stock < 0){
+async function UpdateIngredients(parent,{id,ingredients}){
+    // console.log(ingredients.stock)
+    let updateIng = await ingModel.findByIdAndUpdate(id,ingredients,{new:true})
+    if(ingredients.stock < 0){
         throw new Error("stock can't minus")
     }
     return updateIng

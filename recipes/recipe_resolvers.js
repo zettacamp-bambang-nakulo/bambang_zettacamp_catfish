@@ -263,18 +263,8 @@ async function AfterDiscount(parent,args,context){
 
 
 //untuk mealukan updating pada recepies dengan mengganti id ingredients atau ganti nama,dll
-async function UpdateRecipe(parent,{id,recipe_name,description,image,ingredients,price,status,menu_highlight,special_offers,discount}){
-    const UpdRecipe= await recipeModel.findByIdAndUpdate(id,{
-    recipe_name:recipe_name,
-    description:description,
-    image:image,
-    ingredients:ingredients,
-    price:price,
-    status:status,
-    menu_highlight:menu_highlight,
-    special_offers:special_offers,
-    discount:discount
-    },{new:true})
+async function UpdateRecipe(parent,{id,updaterecipe,ingredients}){
+    const UpdRecipe= await recipeModel.findByIdAndUpdate(id,updaterecipe,ingredients,{new:true})
     if(ingredients){
         let ingredientIDs= ingredients.map((el)=>el.ingredient_id.toString())
         // console.log(JSON.stringify(ingredientIDs))
