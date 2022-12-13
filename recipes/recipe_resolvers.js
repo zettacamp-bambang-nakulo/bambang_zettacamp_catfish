@@ -277,7 +277,7 @@ async function UpdateRecipe(parent,{id,recipe_name,description,image,ingredients
     },{new:true})
     if(ingredients){
         let ingredientIDs= ingredients.map((el)=>el.ingredient_id.toString())
-        console.log(JSON.stringify(ingredientIDs))
+        // console.log(JSON.stringify(ingredientIDs))
         if(new Set(ingredientIDs).size !==ingredientIDs.length){
             throw new Error("ingredients are already there")
         }
