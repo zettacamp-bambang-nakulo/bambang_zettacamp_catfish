@@ -70,11 +70,6 @@ const typeDefs= gql`
         max_page: Int
     }
 
-    input updateingredients{
-        nama:String
-        stock:Int
-    }
-
     input ingredientidinput{
         ingredient_id:ID
         stock_used:Int
@@ -190,7 +185,7 @@ const typeDefs= gql`
         ForgetPassword(email:String,password:String):user
         
         CreateIngredints(name:String, stock:Int): ingredients
-        UpdateIngredients(id:ID,update:updateingredients): ingredients
+        UpdateIngredients(id:ID,name:String,stock:Int): ingredients
         DeleteIngredients(id:ID):ingredients
 
         CreateRecipes(recipe_name:String, description:String, image:String, ingredients:[ingredientidinput],status:status_recipe,price:Int,menu_highlight:Boolean,special_offers:Boolean,discount:Int):recipes

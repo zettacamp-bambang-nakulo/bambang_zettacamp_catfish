@@ -97,10 +97,11 @@ async function getOneIngredients(parent,{id}){
 
 //update stock
 async function UpdateIngredients(parent,{id,name, stock}){
-    let updateIng = await ingModel.findByIdAndUpdate(id,{
-        name:name,
-        stock:stock
-
+    let updateIng = await ingModel.findByIdAndUpdate(id,
+        { $set:{
+            name:name,
+            stock:stock
+        }
     },{new:true})
     if(stock < 0){
         throw new ApolloError("stock can't minus")
