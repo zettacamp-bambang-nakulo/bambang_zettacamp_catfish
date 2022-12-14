@@ -202,11 +202,11 @@ const typeDefs= gql`
         ForgetPassword(email:String,password:String):user
         
         CreateIngredints(name:String, stock:Int): ingredients
-        UpdateIngredients(id:ID,ingredients:updateingredients): ingredients
+        UpdateIngredients(id:ID,name:String, stock:Int): ingredients
         DeleteIngredients(id:ID):ingredients
 
         CreateRecipes(recipe_name:String, description:String, image:String, ingredients:[ingredientidinput],status:status_recipe,price:Int,menu_highlight:Boolean,special_offers:Boolean,discount:Int):recipes
-        UpdateRecipe(id:ID,updaterecipe:updateRecipes,ingredients:[ingredientidinput]):recipes
+        UpdateRecipe(id:ID,recipe_name:String,description:String, image:String, ingredients:[ingredientidinput],price:Int,status:status_recipe,menu_highlight:Boolean,special_offers:Boolean,discount:Int):recipes
         DeleteRecipe(id:ID):recipes
 
         addCart(menu:[trans_menuInput]): transactions

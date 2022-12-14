@@ -263,22 +263,52 @@ async function AfterDiscount(parent,args,context){
 
 
 //untuk mealukan updating pada recepies dengan mengganti id ingredients atau ganti nama,dll
-async function UpdateRecipe(parent,{id,updaterecipe,ingredients}){
-    const UpdRecipe= await recipeModel.findByIdAndUpdate(id,updaterecipe,ingredients,{new:true})
+async function UpdateRecipe(parent,{id,recipe_name,description,image,ingredients,price,status,menu_highlight,special_offers,discount}){
+    let check = await recipeModel.findById(id)
+    if(!recipe_name){
+        recipe_name = check.recipe_name
+    }
+    if(!description){
+        description = check.description
+    }
+    if(!image){
+        image = check.image
+    }
+    if(!ingredients){
+        ingredients = check.ingredients
+    }
+    if(!price){
+        price = check.price
+    }
+    if(!status){
+        status = check.status
+    }
+    if(!menu_highlight){
+        menu_highlight = check.menu_highlight
+    }
+    if(!special_offers){
+        special_offers = check.special_offers
+    }
+    if(!discount){
+        discount = check.discount
+    }
+    const UpdRecipe= await recipeModel.findByIdAndUpdate(id,{
+    recipe_name:recipe_name,
+    description:description,
+    image:image,
+    ingredients:ingredients,
+    price:price,
+    status:status,
+    menu_highlight:menu_highlight,
+    special_offers:special_offers,
+    discount:discount
+    },{new:true})
     if(ingredients){
-        let ingredientIDs= ingredients.map((el)=>el.ingredient_id.toString())
-        // console.log(JSON.stringify(ingredientIDs))
-        if(new Set(ingredientIDs).size !==ingredientIDs.length){
-            throw new Error("ingredients are already there")
-        }
         for(let ingredient of ingredients){
            const bahan = await ingModel.findById(ingredient.ingredient_id)
            if (bahan.stock < ingredient.stock_used){
-            throw new Error("less ingredient")
+            throw new ApolloError("bahan kurang")
            }
-        //    if(baha){
-        //     throw new Error("ingredient has been used")
-        //    }
         }
     }
     return UpdRecipe
