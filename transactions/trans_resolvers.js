@@ -610,25 +610,25 @@ async function deleteCart(parent,{id},context){
 }
 
 //functions untuk mendelete transactions
-// async function DeleteTransaction(parent,args,context){
-//     await transModel.updateMany(
-//             {
-//                 status:"active"
-//             },
-//             {
-//                 $set: {
-//                     status:"deleted"
-//                 }
-//             },{new:true})
-//     // console.log("helo delete trans")
-//     // let delTrans = await transModel.find(
-//     //     {
-//     //         status:"active"
-//     //     }
-//     //     )\
+async function DeleteTransaction(parent,args,context){
+    await transModel.updateMany(
+            {
+                status:"active"
+            },
+            {
+                $set: {
+                    status:"deleted"
+                }
+            },{new:true})
+    // console.log("helo delete trans")
+    // let delTrans = await transModel.find(
+    //     {
+    //         status:"active"
+    //     }
+    //     )\
 
-//     return await transModel.find({status:"deleted"})
-// }
+    return await transModel.find({status:"deleted"})
+}
     
 
 const trans_resolvers={

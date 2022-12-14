@@ -17,6 +17,17 @@ async function getAllUser(parent,{email,first_name,last_name, page, limit}){
    let query ={$and:[]};
    let queryAgg= [];
 
+   if(page){
+    queryAgg.push(
+        {
+            $skip : (page-1)*limit
+        },
+        {
+            $limit:limit
+        }
+    )
+   }
+
    //kondisi untuk parameter, jika ada akan dipush ke dalam query dengan metod $and
    if(email){
     query.$and.push({
@@ -43,39 +54,10 @@ async function getAllUser(parent,{email,first_name,last_name, page, limit}){
             $match:query
         },
     )
-   }else{
-    const count = await userModel.count()
-    let dataUser = await userModel.aggregate([
-        {
-            $skip : (page-1)*limit
-        },
-        {
-            $limit:limit
-        }
-   ])
-   dataUser.map((el)=>{
-    el.id = mongoose.Types.ObjectId(el._id)
-        return el
-   })
-   dataUser = {
-    data: dataUser,
-    count:count,
-    page: page,
-    max_page:  Math.ceil( count / limit),
-    
-    };
-   return dataUser
    }
    const count = await userModel.count()
-   let dataUser = await userModel.aggregate(queryAgg,[
-    {
-        $skip : (page-1)*limit
-    },
-    {
-        $limit:limit
-    }
-    
-   ])
+   let dataUser = await userModel.aggregate(queryAgg)
+   
    dataUser.map((el)=>{
     el.id = mongoose.Types.ObjectId(el._id)
         return el
@@ -224,47 +206,47 @@ async function ForgetPassword(parent,{email,password},context){
 }
 
 //untuk update data user
-// async function UpdateUser(parent,{id,email,first_name,last_name,password,status}){
-//     let check = await userModel.findById(id)
-//     if(!first_name){
-//         first_name = check.first_name
-//     }
-//     if(!last_name){
-//         last_name = check.last_name
-//     }
-//     if(!email){
-//         email = check.email
-//     }
-//     if(!password){
-//         password = check.password
-//     }
-//     if(!status){
-//         status = check.status
-//     }
-//     if(password){
-//         password = await bcrypt.hash(password, 5)
-//     }
-//     let changeUser= await userModel.findByIdAndUpdate(id,{
-//         email:email,
-//         first_name:first_name,
-//         last_name:last_name,
-//         password:password,
-//         status:status
-//     },{new:true})
-//     return changeUser
-// }
+async function UpdateUser(parent,{id,email,first_name,last_name,password,status}){
+    let check = await userModel.findById(id)
+    if(!first_name){
+        first_name = check.first_name
+    }
+    if(!last_name){
+        last_name = check.last_name
+    }
+    if(!email){
+        email = check.email
+    }
+    if(!password){
+        password = check.password
+    }
+    if(!status){
+        status = check
+    }
+    if(password){
+        password = await bcrypt.hash(password, 5)
+    }
+    let changeUser= await userModel.findByIdAndUpdate(id,{
+        email:email,
+        first_name:first_name,
+        last_name:last_name,
+        password:password,
+        status:status
+    },{new:true})
+    return changeUser
+}
 
 //untuk menghapus atau lebih untuk mengganti status dalam data user
-// async function DeleteUser(parent,{id,email,first_name,last_name,password,status}){
-//     let delUser= await userModel.findByIdAndUpdate(id,{
-//         email:email,
-//         first_name:first_name,
-//         last_name:last_name,
-//         password:password,
-//         status:status
-//     },{new:true})
-//     return delUser
-// }
+async function DeleteUser(parent,{id,email,first_name,last_name,password,status}){
+    let delUser= await userModel.findByIdAndUpdate(id,{
+        email:email,
+        first_name:first_name,
+        last_name:last_name,
+        password:password,
+        status:status
+    },{new:true})
+    return delUser
+}
 
 //untuk generateAccessToken
 function generateAccessToken(payload){

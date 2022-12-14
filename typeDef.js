@@ -176,7 +176,7 @@ const typeDefs= gql`
 
 
     type Query{
-        getAllUser(email:String,page:Int,limit:Int):users
+        getAllUser(email:String,page:Int,limit:Int,first_name:String, last_name:String):users
         getOneUser(id:ID, email:String):[user]
 
         getAllIngredients(page:Int,limit:Int,name:String,stock:Int,):pagination_ingredients
