@@ -320,7 +320,7 @@ async function getOneTransaction(parent,args,context){
             return getOneTrans 
         
     }catch(err){
-        throw new ApolloError(err)
+        throw new Error(err)
     }
 }
 
@@ -344,8 +344,8 @@ async function validateStockIngredient(user_id,id, menus){
      const ingredientMap=[]
      let total = 0
      for (let recipe of transaction_menu.menu){
-        if(recipe.recipe_id.status ==="unpublish")throw new ApolloError("menu is unpublish not order now")
-        if( recipe.recipe_id.status === "deleted") throw new ApolloError("status deleted")
+        if(recipe.recipe_id.status ==="unpublish")throw new Error("menu is unpublish not order now")
+        if( recipe.recipe_id.status === "deleted") throw new Error("menu status is deleted")
         const amount= recipe.amount
         const price = recipe.recipe_id.price
         total += price*amount
@@ -356,7 +356,7 @@ async function validateStockIngredient(user_id,id, menus){
             });
             if( ingredient.ingredient_id.stock < (ingredient.stock_used*amount)){
                 let Validasifailed =  await transModel.findByIdAndUpdate(id,{user_id,menu:menus,order_status:"failed"},{new:true})
-                if(Validasifailed.order_status ==="failed")throw new ApolloError("order is failed")
+                if(Validasifailed.order_status ==="failed")throw new Error("order is failed")
                 return Validasifailed
                 
             }
@@ -370,7 +370,7 @@ async function validateStockIngredient(user_id,id, menus){
     let total_all = await getTotal({menu:menus})
     // console.log(t)
     if(user.saldo < total_all ){
-        throw new ApolloError("less balance")
+        throw new Error("less balance")
     }
     await userModel.updateOne({_id:user_id},
         {
@@ -441,12 +441,12 @@ async function addCart(parent,{menu,order_date},context){
         )
         console.log(add)
         if(add.length > 0){
-            throw new ApolloError("menu sudah ada")
+            throw new Error("menu sudah ada")
         }
         for(let status of menu){
             const checkStatus = await recipeModel.findById(status.recipe_id)
             if(checkStatus.status ==="unpublish"){
-                throw new ApolloError("the menu has been unpublished")
+                throw new Error("the menu has been unpublished")
             }
         }
         add = await transModel.findByIdAndUpdate(checkTransacation._id,
