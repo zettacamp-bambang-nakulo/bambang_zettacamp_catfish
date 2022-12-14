@@ -229,7 +229,7 @@ async function getOneRecipes(parent,{id}){
 
 //untuk membuat create recipes
 async function CreateRecipes(parent,{recipe_name,description,image,ingredients,stock_used,price,status,menu_highlight,special_offers,discount}){
-    const checkname= await recipeModel.findOne({recipe_name:recipe_name})
+    const checkname= await recipeModel.findOne({recipe_name:new RegExp(recipe_name,"i")})
     if(checkname){
         throw new Error("the name recipe already exists")
     }
