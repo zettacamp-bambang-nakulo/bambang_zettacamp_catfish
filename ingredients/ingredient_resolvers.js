@@ -128,12 +128,7 @@ async function DeleteIngredients(parent,{id,name,stock,status}){
     if(checkRecipe.length !== 0){
         throw new Error("ingredients has been used ")
     }else{
-        const delIng = await ingModel.findByIdAndUpdate(id,
-        {
-            $set:{
-                status:"deleted"
-            }
-        })
+        const delIng = await ingModel.findByIdAndDelete(id)
         if(!delIng){
             throw new Error("ingredients is delete")
         }
