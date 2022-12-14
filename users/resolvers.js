@@ -225,6 +225,22 @@ async function ForgetPassword(parent,{email,password},context){
 
 //untuk update data user
 async function UpdateUser(parent,{id,email,first_name,last_name,password,status}){
+    let check = await userModel.findById(id)
+    if(!first_name){
+        first_name = check.first_name
+    }
+    if(!last_name){
+        last_name = check.last_name
+    }
+    if(!email){
+        email = check.email
+    }
+    if(!password){
+        password = check.password
+    }
+    if(!status){
+        status = check.status
+    }
     if(password){
         password = await bcrypt.hash(password, 5)
     }
