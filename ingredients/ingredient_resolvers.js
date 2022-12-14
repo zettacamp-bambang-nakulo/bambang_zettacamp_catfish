@@ -8,7 +8,7 @@ const mongoose= require("mongoose")
 //-------------------------------------------collection ingredients-----------------------------------------------------//
 // create ingredients
 async function CreateIngredints(parent,{name,stock}){
-    const namaIng = await ingModel.findOne({name:name})
+    const namaIng = await ingModel.findOne({name:new RegExp(name,"i")})
     if(namaIng){
         throw new Error("ingredient already exists")
     }
